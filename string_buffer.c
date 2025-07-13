@@ -36,7 +36,7 @@ void string_buffer_append(StringBuffer *buf, char *text, size_t text_len) {
 }
 
 int string_buffer_index_of(StringBuffer *buf, char *text, int from) {
-	if(!buf || !text) return -1;
+	if(!buf || !text || !buf->value) return -1;
 	if(from >= buf->size) return -1;
 
 	char *match = strstr(buf->value + from, text);
@@ -53,7 +53,7 @@ typedef struct {
 } StringMatches;
 
 StringMatches *string_buffer_matches(StringBuffer *buf, char *text, int from) {
-	if(!buf || !text) return NULL;
+	if(!buf || !text || !buf->value) return NULL;
 	if(from >= buf->size) return NULL;
 
 	StringMatches *matches = malloc(sizeof(*matches));
@@ -89,6 +89,73 @@ void string_matches_free(StringMatches *matches) {
 	free(matches);
 }
 
+typedef struct {
+	int count;
+	char **parts;
+} StringSplit;
+
+void string_split_free(StringSplit *split) {
+	if(!split) return;
+	for(int i = 0; i < split->count; i++) {
+		free(split->parts[i]);
+	}
+	free(split->parts);
+	free(split);
+}
+
+StringSplit *string_buffer_split(StringBuffer *buf, char *delimiter) {
+	if(!buf || !delimiter || !buf->value) return NULL;
+
+	char *str_copy = strdup(buf->value);
+	if(!str_copy) return NULL;
+
+	StringSplit *result = malloc(sizeof(*result));
+	if(!result) {
+		free(str_copy);
+		return NULL;
+	}
+	result->parts = NULL;
+	result->count = 0;
+
+	char *save_ptr;
+	char *part;
+
+	part = strtok_r(str_copy, delimiter, &save_ptr);
+	while(part != NULL) {
+		char **tmp = realloc(result->parts, (result->count + 1) * sizeof(char *));
+		if(!tmp) {
+			string_split_free(result);
+			free(str_copy);
+			return NULL;
+		}
+
+		result->parts = tmp;
+		result->parts[result->count] = strdup(part);
+		if(!result->parts[result->count]) {
+			string_split_free(result);
+			free(str_copy);
+			return NULL;
+		}
+		
+		result->count++;
+		part = strtok_r(NULL, delimiter, &save_ptr);
+	}
+
+	char **tmp = realloc(result->parts, (result->count + 1) * sizeof(char *));
+	if(!tmp) {
+		string_split_free(result);
+		free(str_copy);
+		return NULL;
+	}
+
+	result->parts = tmp;
+	result->parts[result->count] = NULL;
+
+	free(str_copy);
+
+	return result;
+}
+
 void string_buffer_free(StringBuffer *buf) {
 	if (!buf)
 		return;
@@ -122,13 +189,17 @@ int main(void) {
 	if(!m) {
 		return -1;
 	}
-	printf("matches = %d, %d, %d \n", m->indices[0], m->indices[1], m->indices[2]);
-	printf("match_count = %d \n", m->count);
 	assert(m->count == 3);
 	assert(m->indices[0] == 2);
 	assert(m->indices[1] == 3);
 	assert(m->indices[2] == 9);
 
+	StringSplit *words = string_buffer_split(buf, " ");
+	assert(words->count == 2);
+	assert(strcmp(words->parts[0], "hello") == 0);
+	assert(strcmp(words->parts[1], "world") == 0);
+
+	string_split_free(words);
 	string_matches_free(m);
 	string_buffer_free(buf);
 	return 0;
