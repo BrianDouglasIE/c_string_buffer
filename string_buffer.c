@@ -47,6 +47,48 @@ int string_buffer_index_of(StringBuffer *buf, char *text, int from) {
 	return match - buf->value;
 }
 
+typedef struct {
+	int count;
+	int *indices;
+} StringMatches;
+
+StringMatches *string_buffer_matches(StringBuffer *buf, char *text, int from) {
+	if(!buf || !text) return NULL;
+	if(from >= buf->size) return NULL;
+
+	StringMatches *matches = malloc(sizeof(*matches));
+	if(!matches) {
+		perror("malloc");
+		return NULL;
+	}
+
+	matches->count = 0;
+	matches->indices = NULL;
+
+	int current_index = from;
+	while(current_index != -1) {
+		current_index = string_buffer_index_of(buf, text, current_index + 1);
+		if(current_index == -1) break;
+
+		matches->indices = realloc(matches->indices, sizeof(int) * matches->count + 1);
+		if(!matches->indices) {
+			perror("realloc");
+			break;
+		}
+		matches->indices[matches->count] = current_index;
+		matches->count++;
+	}
+
+	return matches;
+}
+
+void string_matches_free(StringMatches *matches) {
+	if(!matches) return;
+
+	free(matches->indices);
+	free(matches);
+}
+
 void string_buffer_free(StringBuffer *buf) {
 	if (!buf)
 		return;
@@ -76,6 +118,18 @@ int main(void) {
 	assert(string_buffer_index_of(buf, "d", buf->size - 1) == buf->size - 1);
 	assert(string_buffer_index_of(buf, "h", 1) == -1);
 
+	StringMatches *m = string_buffer_matches(buf, "l", 0);
+	if(!m) {
+		return -1;
+	}
+	printf("matches = %d, %d, %d \n", m->indices[0], m->indices[1], m->indices[2]);
+	printf("match_count = %d \n", m->count);
+	assert(m->count == 3);
+	assert(m->indices[0] == 2);
+	assert(m->indices[1] == 3);
+	assert(m->indices[2] == 9);
+
+	string_matches_free(m);
 	string_buffer_free(buf);
 	return 0;
 }
