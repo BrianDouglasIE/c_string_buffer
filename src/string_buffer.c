@@ -24,6 +24,10 @@ void StringBuffer_free(StringBuffer *buf) {
   free(buf);
 }
 
+void StringBuffer_print(StringBuffer *buf) {
+  printf("size: %ld\ndata: %s\n", buf->size, buf->data);
+}
+
 void StringBuffer_append(StringBuffer *buf, char *text) {
   if (!buf || !text)
     return;
@@ -79,8 +83,8 @@ int StringBuffer_index_of(StringBuffer *buf, char *text, size_t from) {
   return match - buf->data;
 }
 
-MatchResult *StringBuffer_match(StringBuffer *buf, char *text) {
-  if (!buf || !text || !buf->data)
+MatchResult *StringBuffer_match(StringBuffer *buf, char *text, size_t from) {
+  if (!buf || !text || !buf->data || from >= buf->size)
     return NULL;
 
   MatchResult *matches = malloc(sizeof(*matches));
@@ -92,12 +96,8 @@ MatchResult *StringBuffer_match(StringBuffer *buf, char *text) {
   matches->count = 0;
   matches->positions = NULL;
 
-  int current_index = 0;
+  int current_index = StringBuffer_index_of(buf, text, from);
   while (current_index != -1) {
-    current_index = StringBuffer_index_of(buf, text, current_index + 1);
-    if (current_index == -1)
-      break;
-
     matches->positions =
         realloc(matches->positions, sizeof(size_t) * matches->count + 1);
     if (!matches->positions) {
@@ -106,33 +106,86 @@ MatchResult *StringBuffer_match(StringBuffer *buf, char *text) {
     }
     matches->positions[matches->count] = current_index;
     matches->count++;
+
+    current_index = StringBuffer_index_of(buf, text, current_index + 1);
+    if (current_index == -1)
+      break;
   }
 
   return matches;
 }
 
-void StringBuffer_remove(StringBuffer *buf, char *text) {
-  if (!buf || !text || !buf->data)
+void StringBuffer_remove(StringBuffer *buf, char *text, size_t from) {
+  if (!buf || !text || !buf->data || from >= buf->size)
     return;
 
   size_t text_len = strlen(text);
   if (!text_len)
     return;
 
-  MatchResult *match = StringBuffer_match(buf, text);
-  if (!match || !match->count) {
-    if (match)
-      MatchResult_free(match);
+  MatchResult *match = StringBuffer_match(buf, text, from);
+  if (!match || match->count == 0) {
+    MatchResult_free(match);
     return;
   }
 
   for (size_t i = match->count; i > 0; --i) {
     size_t pos = match->positions[i - 1];
-    size_t remaining_bytes = buf->size - pos - text_len + 1;
-    memmove(buf->data + pos, buf->data + pos + text_len, remaining_bytes);
+    size_t remaining_bytes = buf->size - (pos + text_len);
+    memmove(buf->data + pos, buf->data + pos + text_len,
+            remaining_bytes + 1); // includes null byte
+    buf->size -= text_len;
   }
 
-  buf->size -= text_len * match->count;
+  MatchResult_free(match);
+}
+
+void StringBuffer_replace(StringBuffer *buf, char *original, char *update,
+                          size_t from) {
+  if (!buf || !original || !update || !buf->data || from >= buf->size)
+    return;
+
+  size_t original_len = strlen(original);
+  size_t update_len = strlen(update);
+  if (!original_len || original_len > buf->size)
+    return;
+
+  MatchResult *match = StringBuffer_match(buf, original, from);
+  if (!match || match->count == 0) {
+    MatchResult_free(match);
+    return;
+  }
+
+  // Calculate new size
+  size_t new_size = buf->size + (update_len - original_len) * match->count + 1;
+  char *new_data = malloc(new_size);
+  if (!new_data) {
+    perror("malloc");
+    MatchResult_free(match);
+    return;
+  }
+
+  size_t src_i = 0;   // index into old buf->data
+  size_t dst_i = 0;   // index into new_data
+  size_t match_i = 0; // match position index
+
+  while (src_i < buf->size) {
+    if (match_i < match->count && src_i == match->positions[match_i]) {
+      memcpy(new_data + dst_i, update, update_len);
+      dst_i += update_len;
+      src_i += original_len;
+      match_i++;
+    } else {
+      new_data[dst_i++] = buf->data[src_i++];
+    }
+  }
+
+  new_data[dst_i] = '\0';
+
+  free(buf->data);
+  buf->data = new_data;
+  buf->size = dst_i;
+
   MatchResult_free(match);
 }
 
