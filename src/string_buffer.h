@@ -16,8 +16,8 @@ StringBuffer *StringBuffer_init();
 void StringBuffer_free(StringBuffer *buf);
 void StringBuffer_append(StringBuffer *buf, char *text);
 void StringBuffer_prepend(StringBuffer *buf, char *text);
-void StringBuffer_remove(StringBuffer *buf, char *text, size_t from);
-int StringBuffer_match(StringBuffer *buf, char *text, size_t from);
+void StringBuffer_remove(StringBuffer *buf, char *text);
+int StringBuffer_index_of(StringBuffer *buf, char *text, size_t from);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// MatchResult
@@ -28,7 +28,7 @@ typedef struct {
   size_t *positions;
 } MatchResult;
 
-MatchResult *StringBuffer_match_all(StringBuffer *buf, char *text, size_t from);
+MatchResult *StringBuffer_match(StringBuffer *buf, char *text);
 void MatchResult_free(MatchResult *matches);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

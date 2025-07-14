@@ -65,7 +65,7 @@ void StringBuffer_prepend(StringBuffer *buf, char *text) {
   buf->data[buf->size] = '\0';
 }
 
-int StringBuffer_match(StringBuffer *buf, char *text, size_t from) {
+int StringBuffer_index_of(StringBuffer *buf, char *text, size_t from) {
   if (!buf || !text || !buf->data)
     return -1;
   if (from >= buf->size)
@@ -79,11 +79,8 @@ int StringBuffer_match(StringBuffer *buf, char *text, size_t from) {
   return match - buf->data;
 }
 
-MatchResult *StringBuffer_match_all(StringBuffer *buf, char *text,
-                                    size_t from) {
+MatchResult *StringBuffer_match(StringBuffer *buf, char *text) {
   if (!buf || !text || !buf->data)
-    return NULL;
-  if (from >= buf->size)
     return NULL;
 
   MatchResult *matches = malloc(sizeof(*matches));
@@ -95,9 +92,9 @@ MatchResult *StringBuffer_match_all(StringBuffer *buf, char *text,
   matches->count = 0;
   matches->positions = NULL;
 
-  int current_index = from;
+  int current_index = 0;
   while (current_index != -1) {
-    current_index = StringBuffer_match(buf, text, current_index + 1);
+    current_index = StringBuffer_index_of(buf, text, current_index + 1);
     if (current_index == -1)
       break;
 
@@ -114,15 +111,15 @@ MatchResult *StringBuffer_match_all(StringBuffer *buf, char *text,
   return matches;
 }
 
-void StringBuffer_remove(StringBuffer *buf, char *text, size_t from) {
-  if (!buf || !text || !buf->data || from >= buf->size)
+void StringBuffer_remove(StringBuffer *buf, char *text) {
+  if (!buf || !text || !buf->data)
     return;
 
   size_t text_len = strlen(text);
   if (!text_len)
     return;
 
-  MatchResult *match = StringBuffer_match_all(buf, text, from);
+  MatchResult *match = StringBuffer_match(buf, text);
   if (!match || !match->count) {
     if (match)
       MatchResult_free(match);

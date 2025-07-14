@@ -14,16 +14,16 @@ int main(void) {
   assert(buf->size == 11);
   assert(strcmp(buf->data, "hello world") == 0);
 
-  assert(StringBuffer_match(buf, "hello", 0) == 0);
-  assert(StringBuffer_match(buf, "world", 0) == 6);
-  assert(StringBuffer_match(buf, "mars", 0) == -1);
-  assert(StringBuffer_match(buf, "llo", 2) == 2);
-  assert(StringBuffer_match(buf, "hello", 99) == -1);
-  assert(StringBuffer_match(buf, "hello", buf->size) == -1);
-  assert(StringBuffer_match(buf, "d", buf->size - 1) == (int)(buf->size - 1));
-  assert(StringBuffer_match(buf, "h", 1) == -1);
+  assert(StringBuffer_index_of(buf, "hello", 0) == 0);
+  assert(StringBuffer_index_of(buf, "world", 0) == 6);
+  assert(StringBuffer_index_of(buf, "mars", 0) == -1);
+  assert(StringBuffer_index_of(buf, "llo", 2) == 2);
+  assert(StringBuffer_index_of(buf, "hello", 99) == -1);
+  assert(StringBuffer_index_of(buf, "hello", buf->size) == -1);
+  assert(StringBuffer_index_of(buf, "d", buf->size - 1) == (int)(buf->size - 1));
+  assert(StringBuffer_index_of(buf, "h", 1) == -1);
 
-  MatchResult *mr = StringBuffer_match_all(buf, "l", 0);
+  MatchResult *mr = StringBuffer_match(buf, "l");
   if (!mr) {
     return -1;
   }
@@ -43,7 +43,7 @@ int main(void) {
   assert(buf->size == 17);
   assert(strcmp("hello hello world", buf->data) == 0);
 
-  StringBuffer_remove(buf, " ", 0);
+  StringBuffer_remove(buf, " ");
   assert(buf->size == 15);
   assert(strcmp("hellohelloworld", buf->data) == 0);
 
