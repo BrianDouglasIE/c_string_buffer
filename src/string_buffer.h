@@ -1,13 +1,15 @@
 #ifndef STRING_BUFFER_H
 #define STRING_BUFFER_H
 
+#include <stddef.h>
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /// StringBuffer
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 typedef struct {
-	size_t size;
-	char *data;
+  size_t size;
+  char *data;
 } StringBuffer;
 
 StringBuffer *StringBuffer_init();
@@ -22,8 +24,8 @@ int StringBuffer_match(StringBuffer *buf, char *text, size_t from);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 typedef struct {
-	size_t count;
-	size_t *positions;
+  size_t count;
+  size_t *positions;
 } MatchResult;
 
 MatchResult *StringBuffer_match_all(StringBuffer *buf, char *text, size_t from);
@@ -34,8 +36,8 @@ void MatchResult_free(MatchResult *matches);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 typedef struct {
-	size_t count;
-	char **parts;
+  size_t count;
+  char **parts;
 } SplitResult;
 
 SplitResult *StringBuffer_split(StringBuffer *buf, char *delimiter);
