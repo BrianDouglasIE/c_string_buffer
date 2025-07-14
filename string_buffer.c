@@ -39,6 +39,23 @@ void StringBuffer_append(StringBuffer *buf, char *text, size_t text_len) {
 	buf->data[buf->size] = '\0';
 }
 
+void StringBuffer_prepend(StringBuffer *buf, char *text, size_t text_len) {
+	if(!buf || !text || !text_len) return;
+
+	size_t new_size = buf->size + text_len + 1;
+	buf->data = realloc(buf->data, new_size);
+	if(!buf->data) {
+		perror("realloc");
+		return;
+	}
+
+	memcpy(buf->data + text_len, buf->data, buf->size);
+	memcpy(buf->data, text, text_len);
+
+	buf->size += text_len;
+	buf->data[buf->size] = '\0';
+}
+
 int StringBuffer_match(StringBuffer *buf, char *text, size_t from) {
 	if(!buf || !text || !buf->data) return -1;
 	if(from >= buf->size) return -1;
@@ -184,6 +201,10 @@ int main(void) {
 	assert(sr->count == 2);
 	assert(strcmp(sr->parts[0], "hello") == 0);
 	assert(strcmp(sr->parts[1], "world") == 0);
+
+	StringBuffer_prepend(buf, "hello ", 6);
+	assert(buf->size == 17);
+	assert(strcmp("hello hello world", buf->data) == 0);
 
 	SplitResult_free(sr);
 	MatchResult_free(mr);
