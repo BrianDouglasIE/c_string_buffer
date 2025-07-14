@@ -14,6 +14,7 @@ StringBuffer *StringBuffer_init();
 void StringBuffer_free(StringBuffer *buf);
 void StringBuffer_append(StringBuffer *buf, char *text, size_t text_len);
 void StringBuffer_prepend(StringBuffer *buf, char *text, size_t text_len);
+void StringBuffer_remove(StringBuffer *buf, char *text, size_t from);
 int StringBuffer_match(StringBuffer *buf, char *text, size_t from);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

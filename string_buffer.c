@@ -98,6 +98,28 @@ MatchResult *StringBuffer_match_all(StringBuffer *buf, char *text, size_t from) 
 	return matches;
 }
 
+void StringBuffer_remove(StringBuffer *buf, char *text, size_t from) {
+	if (!buf || !text || !buf->data || from >= buf->size) return;
+
+	size_t text_len = strlen(text);
+	if (!text_len) return;
+
+	MatchResult *match = StringBuffer_match_all(buf, text, from);
+	if(!match || !match->count) {
+		if(match) MatchResult_free(match);
+		return;
+	}
+
+	for(size_t i = match->count; i > 0; --i) {
+		size_t pos = match->positions[i - 1];
+		size_t remaining_bytes = buf->size - pos - text_len + 1;
+		memmove(buf->data + pos, buf->data + pos + text_len, remaining_bytes);
+	}
+
+	buf->size -= text_len * match->count;
+	MatchResult_free(match);
+}
+
 void MatchResult_free(MatchResult *matches) {
 	if(!matches) return;
 
@@ -147,7 +169,7 @@ SplitResult *StringBuffer_split(StringBuffer *buf, char *delimiter) {
 			free(str_copy);
 			return NULL;
 		}
-		
+
 		result->count++;
 		part = strtok_r(NULL, delimiter, &save_ptr);
 	}
@@ -205,6 +227,10 @@ int main(void) {
 	StringBuffer_prepend(buf, "hello ", 6);
 	assert(buf->size == 17);
 	assert(strcmp("hello hello world", buf->data) == 0);
+
+	StringBuffer_remove(buf, " ", 0);
+	assert(buf->size == 15);
+	assert(strcmp("hellohelloworld", buf->data) == 0);
 
 	SplitResult_free(sr);
 	MatchResult_free(mr);
