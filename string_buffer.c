@@ -24,9 +24,11 @@ void StringBuffer_free(StringBuffer *buf) {
 	free(buf);
 }
 
-void StringBuffer_append(StringBuffer *buf, char *text, size_t text_len) {
-	if (!buf || !text || !text_len)
-		return;
+void StringBuffer_append(StringBuffer *buf, char *text) {
+	if (!buf || !text) return;
+
+	size_t text_len = strlen(text);
+	if(!text_len) return;
 
 	size_t new_size = buf->size + text_len + 1;
 	buf->data = realloc(buf->data, new_size);
@@ -39,8 +41,11 @@ void StringBuffer_append(StringBuffer *buf, char *text, size_t text_len) {
 	buf->data[buf->size] = '\0';
 }
 
-void StringBuffer_prepend(StringBuffer *buf, char *text, size_t text_len) {
-	if(!buf || !text || !text_len) return;
+void StringBuffer_prepend(StringBuffer *buf, char *text) {
+	if(!buf || !text) return;
+
+	size_t text_len = strlen(text);
+	if(!text_len) return;
 
 	size_t new_size = buf->size + text_len + 1;
 	buf->data = realloc(buf->data, new_size);
@@ -193,11 +198,11 @@ int main(void) {
 	StringBuffer *buf = StringBuffer_init();
 	assert(buf != NULL);
 
-	StringBuffer_append(buf, "hello", 5);
+	StringBuffer_append(buf, "hello");
 	assert(buf->size == 5);
 	assert(strcmp(buf->data, "hello") == 0);
 
-	StringBuffer_append(buf, " world", 6);
+	StringBuffer_append(buf, " world");
 	assert(buf->size == 11);
 	assert(strcmp(buf->data, "hello world") == 0);
 
@@ -224,7 +229,7 @@ int main(void) {
 	assert(strcmp(sr->parts[0], "hello") == 0);
 	assert(strcmp(sr->parts[1], "world") == 0);
 
-	StringBuffer_prepend(buf, "hello ", 6);
+	StringBuffer_prepend(buf, "hello ");
 	assert(buf->size == 17);
 	assert(strcmp("hello hello world", buf->data) == 0);
 
