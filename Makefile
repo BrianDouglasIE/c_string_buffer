@@ -83,7 +83,7 @@ analyze: $(SOURCES)
 
 # Format code
 format:
-	clang-format -i $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(TEST_DIR)/*.c
+	clang-format --style=LLVM -i $(SRC_DIR)/*.c $(SRC_DIR)/*.h $(TEST_DIR)/*.c
 
 # Generate dependencies
 deps: $(SOURCES)

@@ -1,4 +1,5 @@
 #include "string_buffer.h"
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -132,8 +133,7 @@ void StringBuffer_remove(StringBuffer *buf, char *text, size_t from) {
   for (size_t i = match->count; i > 0; --i) {
     size_t pos = match->positions[i - 1];
     size_t remaining_bytes = buf->size - (pos + text_len);
-    memmove(buf->data + pos, buf->data + pos + text_len,
-            remaining_bytes + 1); // includes null byte
+    memmove(buf->data + pos, buf->data + pos + text_len, remaining_bytes + 1);
     buf->size -= text_len;
   }
 
@@ -156,7 +156,6 @@ void StringBuffer_replace(StringBuffer *buf, char *original, char *update,
     return;
   }
 
-  // Calculate new size
   size_t new_size = buf->size + (update_len - original_len) * match->count + 1;
   char *new_data = malloc(new_size);
   if (!new_data) {
@@ -165,9 +164,9 @@ void StringBuffer_replace(StringBuffer *buf, char *original, char *update,
     return;
   }
 
-  size_t src_i = 0;   // index into old buf->data
-  size_t dst_i = 0;   // index into new_data
-  size_t match_i = 0; // match position index
+  size_t src_i = 0;
+  size_t dst_i = 0;
+  size_t match_i = 0;
 
   while (src_i < buf->size) {
     if (match_i < match->count && src_i == match->positions[match_i]) {
