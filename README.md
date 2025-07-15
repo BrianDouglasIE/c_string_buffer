@@ -1,3 +1,7 @@
+# StrinBuffer
+
+```c
+// string_buffer.h
 #ifndef STRING_BUFFER_H
 #define STRING_BUFFER_H
 
@@ -101,4 +105,4 @@ void MatchResult_free(MatchResult *matches);
 void SplitResult_free(SplitResult *split);
 
 #endif
-
+```
