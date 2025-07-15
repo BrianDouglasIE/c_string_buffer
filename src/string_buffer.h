@@ -20,6 +20,7 @@ void StringBuffer_remove(StringBuffer *buf, char *text, size_t from);
 void StringBuffer_replace(StringBuffer *buf, char *original, char *update,
                           size_t from);
 int StringBuffer_index_of(StringBuffer *buf, char *text, size_t from);
+void StringBuffer_clear(StringBuffer *buf);
 void StringBuffer_print(StringBuffer *buf);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +32,7 @@ typedef struct {
   size_t *positions;
 } MatchResult;
 
-MatchResult *StringBuffer_match(StringBuffer *buf, char *text, size_t from);
+MatchResult *StringBuffer_match_all(StringBuffer *buf, char *text, size_t from);
 void MatchResult_free(MatchResult *matches);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

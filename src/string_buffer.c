@@ -25,8 +25,16 @@ void StringBuffer_free(StringBuffer *buf) {
   free(buf);
 }
 
+void StringBuffer_clear(StringBuffer *buf) {
+  if (!buf || !buf->data)
+    return;
+
+  buf->data[0] = '\0';
+  buf->size = 0;
+}
+
 void StringBuffer_print(StringBuffer *buf) {
-  printf("size: %ld\ndata: %s\n", buf->size, buf->data);
+  printf("size: %zu\ndata: %s\n", buf->size, buf->data);
 }
 
 void StringBuffer_append(StringBuffer *buf, char *text) {
@@ -84,7 +92,8 @@ int StringBuffer_index_of(StringBuffer *buf, char *text, size_t from) {
   return match - buf->data;
 }
 
-MatchResult *StringBuffer_match(StringBuffer *buf, char *text, size_t from) {
+MatchResult *StringBuffer_match_all(StringBuffer *buf, char *text,
+                                    size_t from) {
   if (!buf || !text || !buf->data || from >= buf->size)
     return NULL;
 
@@ -100,7 +109,7 @@ MatchResult *StringBuffer_match(StringBuffer *buf, char *text, size_t from) {
   int current_index = StringBuffer_index_of(buf, text, from);
   while (current_index != -1) {
     matches->positions =
-        realloc(matches->positions, sizeof(size_t) * matches->count + 1);
+        realloc(matches->positions, sizeof(size_t) * (matches->count + 1));
     if (!matches->positions) {
       perror("realloc");
       break;
@@ -124,7 +133,7 @@ void StringBuffer_remove(StringBuffer *buf, char *text, size_t from) {
   if (!text_len)
     return;
 
-  MatchResult *match = StringBuffer_match(buf, text, from);
+  MatchResult *match = StringBuffer_match_all(buf, text, from);
   if (!match || match->count == 0) {
     MatchResult_free(match);
     return;
@@ -150,7 +159,7 @@ void StringBuffer_replace(StringBuffer *buf, char *original, char *update,
   if (!original_len || original_len > buf->size)
     return;
 
-  MatchResult *match = StringBuffer_match(buf, original, from);
+  MatchResult *match = StringBuffer_match_all(buf, original, from);
   if (!match || match->count == 0) {
     MatchResult_free(match);
     return;

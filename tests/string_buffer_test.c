@@ -25,7 +25,7 @@ int main(void) {
          (int)(buf->size - 1));
   assert(StringBuffer_index_of(buf, "h", 1) == -1);
 
-  MatchResult *mr = StringBuffer_match(buf, "l", 0);
+  MatchResult *mr = StringBuffer_match_all(buf, "l", 0);
   if (!mr) {
     return -1;
   }
@@ -52,6 +52,10 @@ int main(void) {
   StringBuffer_replace(buf, "hellohello", "hello ", 0);
   assert(buf->size == 11);
   assert(strcmp("hello world", buf->data) == 0);
+
+  StringBuffer_clear(buf);
+  assert(buf->size == 0);
+  assert(strlen(buf->data) == 0);
 
   StringBuffer_free(buf);
   return 0;
