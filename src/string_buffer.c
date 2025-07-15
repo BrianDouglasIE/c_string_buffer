@@ -140,12 +140,10 @@ void StringBuffer_remove(StringBuffer *buf, char *text, size_t from) {
             remaining_bytes + 1);
     buf->size -= text_len;
     current_index = StringBuffer_index_of(buf, text, current_index + 1);
-    if(current_index == -1) break;
   }
 }
 
-void StringBuffer_replace(StringBuffer *buf, char *original, char *update,
-                          size_t from) {
+void StringBuffer_replace(StringBuffer *buf, char *original, char *update, size_t from) {
   if (!buf || !original || !update || !buf->data || from >= buf->size)
     return;
 
@@ -154,42 +152,24 @@ void StringBuffer_replace(StringBuffer *buf, char *original, char *update,
   if (!original_len || original_len > buf->size)
     return;
 
-  MatchResult *match = StringBuffer_match_all(buf, original, from);
-  if (!match || match->count == 0) {
-    MatchResult_free(match);
-    return;
-  }
+  int current_index = StringBuffer_index_of(buf, original, from);
+  while (current_index != -1) {
+    size_t tail_len = buf->size - (current_index + original_len);
 
-  size_t new_size = buf->size + (update_len - original_len) * match->count + 1;
-  char *new_data = malloc(new_size);
-  if (!new_data) {
-    perror("malloc");
-    MatchResult_free(match);
-    return;
-  }
-
-  size_t src_i = 0;
-  size_t dst_i = 0;
-  size_t match_i = 0;
-
-  while (src_i < buf->size) {
-    if (match_i < match->count && src_i == match->positions[match_i]) {
-      memcpy(new_data + dst_i, update, update_len);
-      dst_i += update_len;
-      src_i += original_len;
-      match_i++;
-    } else {
-      new_data[dst_i++] = buf->data[src_i++];
+    if (update_len > original_len) {
+      memmove(buf->data + current_index + update_len,
+              buf->data + current_index + original_len,
+              tail_len + 1);
+    } else if (update_len < original_len) {
+      memmove(buf->data + current_index + update_len,
+              buf->data + current_index + original_len,
+              tail_len + 1);
     }
+
+    memcpy(buf->data + current_index, update, update_len);
+    buf->size = buf->size - original_len + update_len;
+    current_index = StringBuffer_index_of(buf, original, current_index + update_len);
   }
-
-  new_data[dst_i] = '\0';
-
-  free(buf->data);
-  buf->data = new_data;
-  buf->size = dst_i;
-
-  MatchResult_free(match);
 }
 
 void MatchResult_free(MatchResult *matches) {

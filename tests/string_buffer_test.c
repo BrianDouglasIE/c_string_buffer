@@ -49,16 +49,23 @@ int main(void) {
   assert(buf->size == 15);
   assert(strcmp("hellohelloworld", buf->data) == 0);
 
+  StringBuffer *remove_overlap_test = StringBuffer_init();
+  StringBuffer_append(remove_overlap_test, "lalalalala");
+  StringBuffer_remove(remove_overlap_test, "ala", 0);
+  assert(strcmp(remove_overlap_test->data, "llla") == 0);
+  assert(remove_overlap_test->size == 4);
+  StringBuffer_free(remove_overlap_test);
+
   StringBuffer_replace(buf, "hellohello", "hello ", 0);
   assert(buf->size == 11);
   assert(strcmp("hello world", buf->data) == 0);
 
-  StringBuffer *overlap_test = StringBuffer_init();
-  StringBuffer_append(overlap_test, "lalalalala");
-  StringBuffer_remove(overlap_test, "ala", 0);
-  assert(strcmp(overlap_test->data, "llla") == 0);
-  assert(overlap_test->size == 4);
-  StringBuffer_free(overlap_test);
+  StringBuffer *replace_overlap_test = StringBuffer_init();
+  StringBuffer_append(replace_overlap_test, "lalalalala");
+  StringBuffer_replace(replace_overlap_test, "ala", "", 0);
+  assert(strcmp(replace_overlap_test->data, "llla") == 0);
+  assert(replace_overlap_test->size == 4);
+  StringBuffer_free(replace_overlap_test);
 
   StringBuffer_clear(buf);
   assert(buf->size == 0);
