@@ -53,6 +53,13 @@ int main(void) {
   assert(buf->size == 11);
   assert(strcmp("hello world", buf->data) == 0);
 
+  StringBuffer *overlap_test = StringBuffer_init();
+  StringBuffer_append(overlap_test, "lalalalala");
+  StringBuffer_remove(overlap_test, "ala", 0);
+  assert(strcmp(overlap_test->data, "llla") == 0);
+  assert(overlap_test->size == 4);
+  StringBuffer_free(overlap_test);
+
   StringBuffer_clear(buf);
   assert(buf->size == 0);
   assert(strlen(buf->data) == 0);

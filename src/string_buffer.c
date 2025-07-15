@@ -71,7 +71,7 @@ void StringBuffer_prepend(StringBuffer *buf, char *text) {
     return;
   }
 
-  memcpy(buf->data + text_len, buf->data, buf->size);
+  memmove(buf->data + text_len, buf->data, buf->size);
   memcpy(buf->data, text, text_len);
 
   buf->size += text_len;
@@ -133,20 +133,15 @@ void StringBuffer_remove(StringBuffer *buf, char *text, size_t from) {
   if (!text_len)
     return;
 
-  MatchResult *match = StringBuffer_match_all(buf, text, from);
-  if (!match || match->count == 0) {
-    MatchResult_free(match);
-    return;
-  }
-
-  for (size_t i = match->count; i > 0; --i) {
-    size_t pos = match->positions[i - 1];
-    size_t remaining_bytes = buf->size - (pos + text_len);
-    memmove(buf->data + pos, buf->data + pos + text_len, remaining_bytes + 1);
+  int current_index = StringBuffer_index_of(buf, text, from);
+  while (current_index != -1) {
+    size_t remaining_bytes = buf->size - (current_index + text_len);
+    memmove(buf->data + current_index, buf->data + current_index + text_len,
+            remaining_bytes + 1);
     buf->size -= text_len;
+    current_index = StringBuffer_index_of(buf, text, current_index + 1);
+    if(current_index == -1) break;
   }
-
-  MatchResult_free(match);
 }
 
 void StringBuffer_replace(StringBuffer *buf, char *original, char *update,
@@ -254,16 +249,7 @@ SplitResult *StringBuffer_split(StringBuffer *buf, char *delimiter) {
     part = strtok(NULL, delimiter);
   }
 
-  char **tmp = realloc(result->parts, (result->count + 1) * sizeof(char *));
-  if (!tmp) {
-    SplitResult_free(result);
-    free(str_copy);
-    return NULL;
-  }
-
-  result->parts = tmp;
   result->parts[result->count] = NULL;
-
   free(str_copy);
 
   return result;
