@@ -1,4 +1,4 @@
-# StrinBuffer
+# StringBuffer
 
 ```c
 // string_buffer.h
